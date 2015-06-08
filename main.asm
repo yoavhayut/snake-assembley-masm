@@ -65,7 +65,7 @@ snakepos DWORD 400, 400 , 415 ,400, 430, 400, 445, 400, 460 ,400 ,40 dup(0) ; [e
 .code
 DRAWRECT	PROC,	x:DWORD,	y:DWORD, h:DWORD,	w:DWORD,	hdc:HDC,	brush:HBRUSH
 LOCAL rectangle:RECT
-mov eax, x
+mov eax, x 
 mov rectangle.left, eax
 add eax, w
 mov	rectangle.right, eax
@@ -188,56 +188,6 @@ FixPlacesList PROC
 	ret
 FixPlacesList ENDP
 
-
-IsCollision PROC, x:DWORD, y:DWORD, w:DWORD, h:DWORD, hdc:HDC
-
-		.if Direction == RIGHT
-		mov edx, x
-		add edx, 16
-		
-
-		mov edi, y
-		sub edi, 5
-		invoke GetPixel, hdc , edx, edi
-
-		.endif
-
-		.if Direction == LEFT
-		mov edx, x
-		sub edx, 6
-		
-
-		mov edi, y
-		sub edi, 5
-		invoke GetPixel, hdc, edx, edi
-
-		.endif
-
-		.if Direction == UP
-		mov edx, x
-		add edx, 5
-
-		mov edi, y
-		sub edi, 6
-
-		invoke GetPixel, hdc, edx, edi
-		.endif
-
-		.if Direction == DOWN
-		
-		mov edx, x		
-		add edx, 16
-		mov edi, y		
-		add edi, 10
-
-		invoke GetPixel, hdc, edx, edi
-		.endif
-
-
-
-		ret
-IsCollision ENDP
-
 DrawPlayer PROC,x:DWORD, y:DWORD, hdc:HDC, brushcolouring:HBRUSH , lenght:DWORD, wParam:WPARAM
 	mov esi, offset snakepos
 
@@ -307,7 +257,7 @@ DrawPlayer PROC,x:DWORD, y:DWORD, hdc:HDC, brushcolouring:HBRUSH , lenght:DWORD,
 	invoke SetDCBrushColor, hdc, 0000ffffh
 	mov brushcolouring, eax
 
-	invoke DRAWRECT, randomnumX ,randomnumY ,  100,	100, 	hdc,  brushcolouring
+	invoke DRAWRECT, randomnumX ,randomnumY ,  15,	15, 	hdc,  brushcolouring
 	
 	.while counter != 0
 		
@@ -320,8 +270,87 @@ DrawPlayer PROC,x:DWORD, y:DWORD, hdc:HDC, brushcolouring:HBRUSH , lenght:DWORD,
 	mov brushcolouring, eax
 
 		
-		invoke GetPixel, hdc, [esi + edi * 8], [esi + edi * 8 + 4]
+	;	invoke GetPixel, hdc, [esi + edi * 8], [esi + edi * 8 + 4]
 		
+		
+		.if Direction == RIGHT
+		mov edx, [esi + edi * 8]
+		add edx, 10
+
+		mov ebx, [esi + edi * 8 + 4]
+		invoke GetPixel, hdc , edx, ebx
+
+		.endif
+
+		.if Direction == LEFT
+		mov edx, [esi + edi * 8]
+		
+		mov ebx, [esi + edi * 8 + 4]
+		invoke GetPixel, hdc, edx, ebx
+
+		.endif
+
+		.if Direction == UP
+		mov edx, [esi + edi * 8]
+		
+		mov ebx, [esi + edi * 8 + 4]
+		
+		invoke GetPixel, hdc, edx, ebx
+		.endif
+
+		.if Direction == DOWN
+		
+		mov edx, [esi + edi * 8]
+		
+		mov ebx, [esi + edi * 8 + 4]
+		add ebx, 10
+
+		invoke GetPixel, hdc, edx, ebx
+		.endif
+
+
+		.if eax != 0000ffffh 
+
+			.if Direction == RIGHT
+		mov edx, [esi + edi * 8]
+		add edx, 10
+
+		mov ebx, [esi + edi * 8 + 4]
+		sub ebx, 10
+		invoke GetPixel, hdc , edx, ebx
+
+		.endif
+
+		.if Direction == LEFT
+		mov edx, [esi + edi * 8]
+		
+		mov ebx, [esi + edi * 8 + 4]
+		sub ebx, 10
+		invoke GetPixel, hdc, edx, ebx
+
+		.endif
+
+		.if Direction == UP
+		mov edx, [esi + edi * 8]
+		add edx, 10
+
+		mov ebx, [esi + edi * 8 + 4]
+		
+		invoke GetPixel, hdc, edx, ebx
+		.endif
+
+		.if Direction == DOWN
+		
+		mov edx, [esi + edi * 8]
+		add edx, 10
+		mov ebx, [esi + edi * 8 + 4]
+		add ebx, 10
+
+		invoke GetPixel, hdc, edx, ebx
+		.endif
+
+		.endif
+
 		.if eax == 0000ffffh 
 		invoke GetTickCount
 		invoke nseed, eax
