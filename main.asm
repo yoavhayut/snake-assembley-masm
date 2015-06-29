@@ -2,15 +2,44 @@
       .model flat, stdcall                      ; 32 bit memory model
       option casemap :none                      ; case sensitive 
 
+
+
+
+include \masm32\include\windows.inc       ; main windows include file
+    ;  include \masm32\include\masm32.inc        ; masm32 library include
+
+    ; -------------------------
+    ; Windows API include files
+    ; -------------------------
+      include \masm32\include\gdi32.inc
+      include \masm32\include\user32.inc
+      include \masm32\include\kernel32.inc
+     include \masm32\include\Comctl32.inc
+      include \masm32\include\comdlg32.inc
+      include \masm32\include\shell32.inc
+      include \masm32\include\oleaut32.inc
+      include \masm32\include\ole32.inc
+      include \masm32\include\msvcrt.inc
+
+      include \masm32\include\dialogs.inc       ; macro file for dialogs
+     include \masm32\macros\macros.asm        
+     includelib \masm32\lib\gdi32.lib
+     includelib \masm32\lib\user32.lib
+     includelib \masm32\lib\kernel32.lib
+     includelib \masm32\lib\Comctl32.lib
+      includelib \masm32\lib\comdlg32.lib
+      includelib \masm32\lib\shell32.lib
+      includelib \masm32\lib\oleaut32.lib
+      includelib \masm32\lib\ole32.lib
+      includelib \masm32\lib\msvcrt.lib
+
 include \masm32\include\windows.inc
 include \masm32\include\kernel32.inc
 include \masm32\include\user32.inc
 include \masm32\include\gdi32.inc
 include \masm32\include\masm32.inc 
 includelib \masm32\lib\masm32.lib
-;include \masm32\include\masm32rt.inc
 
-;include new_counter.asm
 .const
 RECT_SIZE	equ	3
 RECT_SIZE	equ	3
@@ -40,8 +69,13 @@ newcounter DWORD 0
 
 
 scoreText DB "Score:      ", 0 ;Text to show the score
+
+bestscoreText DB "Best Score:      ", 0 ;Text to show the score
+
 	
-score DWORD 0 ; acual score of player
+score DWORD -1 ; acual score of player
+bestscore DWORD 12
+
 
 play DWORD 1
 counter DWORD 0
@@ -52,7 +86,7 @@ PlayerX	DWORD	400
 PlayerY	DWORD	400
 ;Facing	DWORD	LEFT	;1	-	Right,	2	-Down,	3	-	Left,	4	-	Up
 ClassName	DB	"TheClass",0
-windowTitle	DB	"millen!",0
+windowTitle	DB	"The game!",0
 currentX DWORD 400
 currentY DWORD 400
 numTimesPaint DWORD 0
@@ -114,6 +148,7 @@ Grow PROC, lenght:DWORD, x:DWORD, y:DWORD
 
 	invoke long
 	sub gamesp, 4
+	
 	add score, 1	
 
 
@@ -262,9 +297,18 @@ invoke Grow ,2, [esi] , [esi + 4]
 invoke Grow ,3, [esi] , [esi + 4]
 	
 
-
+	mov score, -1
 	mov once, 0
+
 	
+		invoke GetTickCount
+		invoke nseed, eax
+		invoke nrandom, 750
+			
+		mov randomnumX, eax
+			
+		invoke nrandom, 550
+		mov randomnumY, eax
 ret
 
 Restart ENDP
@@ -342,14 +386,18 @@ FixPlacesList ENDP
 
 DrawPlayer PROC,x:DWORD, y:DWORD, hdc:HDC, brushcolouring:HBRUSH , lenght:DWORD, wParam:WPARAM, hWnd:HWND
 	start:
-	mov score , 1
 	
 
 	
-;	invoke crt__itoa, score, addr scoreText + 7, 10 ; Convert integer to string
-;	invoke crt_strlen, addr scoreText ;Get the length of the scoreText string
-;	invoke TextOutA, hdc, 10, 40, addr scoreText, eax ;Print the score
+	invoke crt__itoa, score, addr scoreText + 7, 10 ; Convert integer to string
+	invoke crt_strlen, addr scoreText ;Get the length of the scoreText string
+	invoke TextOutA, hdc, 10, 40, addr scoreText, eax ;Print the score
 
+
+	
+	invoke crt__itoa, bestscore, addr bestscoreText + 12, 10 ; Convert integer to string
+	invoke crt_strlen, addr bestscoreText ;Get the length of the scoreText string
+	invoke TextOutA, hdc, 10, 10, addr bestscoreText, eax ;Print the score
 
 
 
@@ -637,6 +685,7 @@ DrawPlayer PROC,x:DWORD, y:DWORD, hdc:HDC, brushcolouring:HBRUSH , lenght:DWORD,
 		.endif
 
 		.if eax == 0000ffffh && Direction !=0 
+		
 		invoke GetTickCount
 		invoke nseed, eax
 		invoke nrandom, 750
@@ -759,6 +808,13 @@ DrawPlayer PROC,x:DWORD, y:DWORD, hdc:HDC, brushcolouring:HBRUSH , lenght:DWORD,
 
 		.if eax == 0000ff00h && Direction !=0 
 			lost:
+			mov eax, score
+			mov edx , bestscore
+
+			.if eax > edx
+				mov bestscore, eax
+			.endif
+
 			invoke Restart
 			
 			mov play, 0
